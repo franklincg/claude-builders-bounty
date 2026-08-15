@@ -8,7 +8,9 @@
             {
               "field": "weeks",
               "weeksInterval": 1,
-              "triggerAtDay": [5],
+              "triggerAtDay": [
+                5
+              ],
               "triggerAtHour": 17
             }
           ]
@@ -18,15 +20,33 @@
       "name": "Friday 17:00",
       "type": "n8n-nodes-base.scheduleTrigger",
       "typeVersion": 1.2,
-      "position": [0, 0]
+      "position": [
+        0,
+        0
+      ]
     },
     {
       "parameters": {
         "assignments": {
           "assignments": [
-            {"id": "repo", "name": "repo", "value": "owner/repo", "type": "string"},
-            {"id": "language", "name": "language", "value": "EN", "type": "string"},
-            {"id": "destination", "name": "discordWebhook", "value": "https://discord.com/api/webhooks/REPLACE", "type": "string"}
+            {
+              "id": "repo",
+              "name": "repo",
+              "value": "owner/repo",
+              "type": "string"
+            },
+            {
+              "id": "language",
+              "name": "language",
+              "value": "EN",
+              "type": "string"
+            },
+            {
+              "id": "destination",
+              "name": "discordWebhook",
+              "value": "https://discord.com/api/webhooks/REPLACE",
+              "type": "string"
+            }
           ]
         }
       },
@@ -34,7 +54,10 @@
       "name": "Config",
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
-      "position": [220, 0]
+      "position": [
+        220,
+        0
+      ]
     },
     {
       "parameters": {
@@ -44,7 +67,10 @@
       "name": "Build Window",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [440, 0]
+      "position": [
+        440,
+        0
+      ]
     },
     {
       "parameters": {
@@ -53,8 +79,14 @@
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
-            {"name": "Authorization", "value": "=Bearer {{$env.GITHUB_TOKEN}}"},
-            {"name": "User-Agent", "value": "n8n-weekly-dev-summary"}
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{$env.GITHUB_TOKEN}}"
+            },
+            {
+              "name": "User-Agent",
+              "value": "n8n-weekly-dev-summary"
+            }
           ]
         },
         "sendBody": true,
@@ -66,7 +98,10 @@
       "name": "GitHub Activity",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [660, 0]
+      "position": [
+        660,
+        0
+      ]
     },
     {
       "parameters": {
@@ -76,7 +111,10 @@
       "name": "Build Prompt",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [880, 0]
+      "position": [
+        880,
+        0
+      ]
     },
     {
       "parameters": {
@@ -85,9 +123,18 @@
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
-            {"name": "x-api-key", "value": "={{$env.ANTHROPIC_API_KEY}}"},
-            {"name": "anthropic-version", "value": "2023-06-01"},
-            {"name": "content-type", "value": "application/json"}
+            {
+              "name": "x-api-key",
+              "value": "={{$env.ANTHROPIC_API_KEY}}"
+            },
+            {
+              "name": "anthropic-version",
+              "value": "2023-06-01"
+            },
+            {
+              "name": "content-type",
+              "value": "application/json"
+            }
           ]
         },
         "sendBody": true,
@@ -99,7 +146,10 @@
       "name": "Claude Summary",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [1100, 0]
+      "position": [
+        1100,
+        0
+      ]
     },
     {
       "parameters": {
@@ -114,17 +164,81 @@
       "name": "Discord Delivery",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [1320, 0]
+      "position": [
+        1320,
+        0
+      ]
     }
   ],
   "connections": {
-    "Friday 17:00": {"main": [[{"node": "Config", "type": "main", "index": 0}]]},
-    "Config": {"main": [[{"node": "Build Window", "type": "main", "index": 0}]]},
-    "Build Window": {"main": [[{"node": "GitHub Activity", "type": "main", "index": 0}]]},
-    "GitHub Activity": {"main": [[{"node": "Build Prompt", "type": "main", "index": 0}]]},
-    "Build Prompt": {"main": [[{"node": "Claude Summary", "type": "main", "index": 0}]]},
-    "Claude Summary": {"main": [[{"node": "Discord Delivery", "type": "main", "index": 0}]]}
+    "Friday 17:00": {
+      "main": [
+        [
+          {
+            "node": "Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Config": {
+      "main": [
+        [
+          {
+            "node": "Build Window",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Window": {
+      "main": [
+        [
+          {
+            "node": "GitHub Activity",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GitHub Activity": {
+      "main": [
+        [
+          {
+            "node": "Build Prompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Prompt": {
+      "main": [
+        [
+          {
+            "node": "Claude Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Claude Summary": {
+      "main": [
+        [
+          {
+            "node": "Discord Delivery",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
   },
   "active": false,
-  "settings": {}
+  "settings": {},
+  "id": "7bd43c957fa4443b"
 }
