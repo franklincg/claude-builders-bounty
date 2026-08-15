@@ -1,19 +1,24 @@
-# Claude Review CLI
+# Claude PR Review Agent
 
-Dependency-free Python CLI for bounty #4.
+Implementation for bounty #4 with both a Claude Code sub-agent and a dependency-free CLI entry point.
 
 ## Requirements
 
 - Python 3.9+
 - GitHub CLI (`gh`) installed and authenticated
+- Claude Code if you want to use the `.claude/agents/pr-reviewer.md` sub-agent directly
 
-## Usage
+## CLI usage
 
 ```bash
 python claude_review.py --pr https://github.com/owner/repo/pull/123
 ```
 
-The command prints structured Markdown with:
+## Claude Code sub-agent
+
+The repository also includes `.claude/agents/pr-reviewer.md`. It instructs Claude Code to inspect PR metadata/diff with `gh` and return the required structured Markdown review.
+
+Both paths use the required output structure:
 
 - Summary of changes
 - Identified risks
@@ -22,6 +27,15 @@ The command prints structured Markdown with:
 
 ## Validation
 
-The implementation was syntax-checked with `python -m py_compile claude_review.py` and executed against two real GitHub PRs. Their captured outputs are included in `samples/`.
+The CLI was syntax-checked with:
 
-No GitHub token is stored or printed by this tool; authentication is delegated to the local `gh` CLI.
+```bash
+python -m py_compile claude_review.py
+```
+
+It was then executed against two real GitHub PRs. Non-empty captured outputs are included in `samples/`:
+
+- `psf/requests#7603`
+- `pallets/flask#6133`
+
+No GitHub token is stored or printed; GitHub authentication is delegated to the local `gh` CLI.
