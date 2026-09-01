@@ -1,0 +1,11 @@
+interface:
+  display_name: "Mermail Bounty Operator"
+  short_description: "Watch paid-work mail, classify status, and prepare the next safe action."
+  default_prompt: "Use $mermail-bounty-operator to monitor my active paid technical opportunities and surface only meaningful state changes."
+dependencies:
+  tools:
+    - type: "mcp"
+      value: "mermail"
+      description: "Mermail workspace and mailbox MCP server"
+      transport: "streamable_http"
+      url: "https://console.mermail.app/mcp"
