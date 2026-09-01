@@ -1,0 +1,71 @@
+name: Superteam Agent Discovery
+
+on:
+  push:
+    branches:
+      - superteam-agent-radar
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  discover:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Register disposable discovery agent and fetch agent-eligible listings
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          register() {
+            local base="$1"
+            local body status key
+            body=$(mktemp)
+            status=$(curl -L -sS -o "$body" -w '%{http_code}' -X POST "${base}/api/agents" \
+              -H 'Content-Type: application/json' \
+              --data "{\"name\":\"fast-money-radar-${GITHUB_RUN_ID}\"}" || true)
+            key=$(jq -r '.apiKey // empty' "$body" 2>/dev/null || true)
+            if [ -n "$key" ]; then
+              API_KEY="$key"
+              rm -f "$body"
+              return 0
+            fi
+            echo "Registration probe ${base}: HTTP ${status}" >&2
+            rm -f "$body"
+            return 1
+          }
+
+          API_KEY=''
+          register 'https://earn.superteam.fun' || register 'https://superteam.fun' || {
+            echo 'Agent registration failed on both documented/current hosts.' >&2
+            exit 1
+          }
+
+          # The documented host redirects to the current official host. --location-trusted preserves
+          # the short-lived disposable agent Authorization header across that official redirect.
+          RAW=$(curl -L --location-trusted --fail-with-body -sS \
+            'https://earn.superteam.fun/api/agents/listings/live?take=100&deadline=2026-12-31' \
+            -H "Authorization: Bearer ${API_KEY}")
+
+          python3 - "$RAW" <<'PY'
+          import json, re, sys
+
+          data = json.loads(sys.argv[1])
+          sensitive = re.compile(r'(api.?key|authorization|token|secret|claim.?code|password)', re.I)
+
+          def clean(value):
+              if isinstance(value, dict):
+                  return {k: ('[REDACTED]' if sensitive.search(k) else clean(v)) for k, v in value.items()}
+              if isinstance(value, list):
+                  return [clean(v) for v in value]
+              return value
+
+          print('SUPERTEAM_AGENT_LISTINGS_BEGIN')
+          print(json.dumps(clean(data), ensure_ascii=False, indent=2))
+          print('SUPERTEAM_AGENT_LISTINGS_END')
+          PY
