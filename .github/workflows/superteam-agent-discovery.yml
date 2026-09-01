@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - superteam-agent-radar
+  pull_request:
+    branches:
+      - main
   workflow_dispatch:
 
 permissions:
