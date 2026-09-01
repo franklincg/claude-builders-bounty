@@ -1,0 +1,52 @@
+name: Superteam Agent Discovery
+
+on:
+  push:
+    branches:
+      - superteam-agent-radar
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  discover:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Register disposable discovery agent and fetch agent-eligible listings
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          REG=$(curl --fail-with-body -sS -X POST 'https://superteam.fun/api/agents' \
+            -H 'Content-Type: application/json' \
+            --data "{\"name\":\"fast-money-radar-${GITHUB_RUN_ID}\"}")
+
+          API_KEY=$(printf '%s' "$REG" | jq -r '.apiKey // empty')
+          if [ -z "$API_KEY" ]; then
+            echo 'Agent registration did not return an API key.' >&2
+            exit 1
+          fi
+
+          RAW=$(curl --fail-with-body -sS \
+            'https://superteam.fun/api/agents/listings/live?take=100&deadline=2026-12-31' \
+            -H "Authorization: Bearer ${API_KEY}")
+
+          python3 - "$RAW" <<'PY'
+          import json, re, sys
+
+          data = json.loads(sys.argv[1])
+          sensitive = re.compile(r'(api.?key|authorization|token|secret|claim.?code|password)', re.I)
+
+          def clean(value):
+              if isinstance(value, dict):
+                  return {k: ('[REDACTED]' if sensitive.search(k) else clean(v)) for k, v in value.items()}
+              if isinstance(value, list):
+                  return [clean(v) for v in value]
+              return value
+
+          print('SUPERTEAM_AGENT_LISTINGS_BEGIN')
+          print(json.dumps(clean(data), ensure_ascii=False, indent=2))
+          print('SUPERTEAM_AGENT_LISTINGS_END')
+          PY
