@@ -32,7 +32,6 @@ jobs:
             key=$(jq -r '.apiKey // empty' "$body" 2>/dev/null || true)
             if [ -n "$key" ]; then
               API_KEY="$key"
-              BASE="$base"
               rm -f "$body"
               return 0
             fi
@@ -42,14 +41,14 @@ jobs:
           }
 
           API_KEY=''
-          BASE=''
           register 'https://earn.superteam.fun' || register 'https://superteam.fun' || {
             echo 'Agent registration failed on both documented/current hosts.' >&2
             exit 1
           }
 
-          RAW=$(curl -L --fail-with-body -sS \
-            "${BASE}/api/agents/listings/live?take=100&deadline=2026-12-31" \
+          # Query the canonical host directly so Authorization is not stripped on a cross-host redirect.
+          RAW=$(curl --fail-with-body -sS \
+            'https://superteam.fun/api/agents/listings/live?take=100&deadline=2026-12-31' \
             -H "Authorization: Bearer ${API_KEY}")
 
           python3 - "$RAW" <<'PY'
