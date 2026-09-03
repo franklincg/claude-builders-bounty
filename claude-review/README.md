@@ -33,7 +33,13 @@ The CLI was syntax-checked with:
 python -m py_compile claude_review.py
 ```
 
-It was then executed against two real GitHub PRs. Non-empty captured outputs are included in `samples/`:
+Deterministic review behavior is covered by unit tests for the required Markdown sections, credential-sensitive changes, execution-surface changes, and large-diff risk detection:
+
+```bash
+python test_claude_review.py
+```
+
+The CLI was also executed against two real GitHub PRs. Non-empty captured outputs are included in `samples/`:
 
 - `psf/requests#7603`
 - `pallets/flask#6133`
